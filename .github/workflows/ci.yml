@@ -170,12 +170,14 @@ jobs:
     - name: Print the final result
       shell: bash
       run: |
-        value=`cat tag_version/tag.txt`
-        echo The result is $value
+        echo "::set-output name=TAG_NAME::$cat tag_version/tag.txt)
     - name: Print the final result in memory
+      id: tag_version
       shell: bash
       run: |
-        echo The result in memory is $value 
+        echo The result in memory is $value
+      env:
+        value:  ${{ steps.tag_version.outputs.TAG_NAME }}
     # - name: Run chart-releaser
     #   uses: helm/chart-releaser-action@v1.1.0
     #   env:
