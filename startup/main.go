@@ -3,6 +3,7 @@ package startup
 import (
 	"github.com/cjlapao/common-go/execution_context"
 	"github.com/cjlapao/common-go/log"
+	"github.com/cjlapao/security-headers-backend/controllers"
 )
 
 var ctx = execution_context.Get()
@@ -10,4 +11,5 @@ var logger = log.Get()
 
 func Init() {
 	// Add your initialization section here
+	controllers.Init()
 }
