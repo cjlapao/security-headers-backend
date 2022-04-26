@@ -69,7 +69,7 @@
         {
             "id": "docker_image",
             "description": "Image Name:",
-            "default": "cjlapao/go-template",
+            "default": "cjlapao/security-headers-backend",
             "type": "promptString"
         },
 

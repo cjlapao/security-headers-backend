@@ -1,4 +1,4 @@
-module github.com/cjlapao/go-template
+module github.com/cjlapao/security-headers-backend
 
 go 1.18
 

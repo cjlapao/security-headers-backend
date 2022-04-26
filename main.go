@@ -8,7 +8,7 @@ import (
 	"github.com/cjlapao/common-go/execution_context"
 	"github.com/cjlapao/common-go/helper"
 	"github.com/cjlapao/common-go/version"
-	"github.com/cjlapao/go-template/startup"
+	"github.com/cjlapao/security-headers-backend/startup"
 )
 
 var services = execution_context.Get().Services
