@@ -170,7 +170,7 @@ jobs:
     - name: Print the final result
       shell: bash
       run: |
-        echo "::set-output name=TAG_NAME::$cat tag_version/tag.txt)
+        echo "::set-output name=TAG_NAME::$cat tag_version/tag.txt)"
     - name: Print the final result in memory
       id: tag_version
       shell: bash
