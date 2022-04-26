@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Release Build and Test
+    name: Release Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -26,7 +26,7 @@ jobs:
     - name: Test
       run: go test -v ./...
   release:
-    name: Release Deploy
+    name: Release Build
     needs: build
     runs-on: ubuntu-latest
     strategy:
@@ -70,7 +70,7 @@ jobs:
         name: ${{ github.event.repository.name }}_win_x64
         path: ./${{ github.event.repository.name }}_win_x64.zip
   publish-release:
-    name: Release Deploy
+    name: Publish Release
     needs: release
     runs-on: ubuntu-latest
     strategy:
@@ -115,7 +115,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ github.event.repository.name }}_linux_x64.zip
+        asset_path: ./${{ github.event.repository.name }}_linux_x64/${{ github.event.repository.name }}_linux_x64.zip
         asset_name: ${{ github.event.repository.name }}_linux_x64.zip
         asset_content_type: application/zip
     - name: Upload Windows x64 Asset
@@ -125,7 +125,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ github.event.repository.name }}_win_x64.zip
+        asset_path: ./${{ github.event.repository.name }}_win_x64/${{ github.event.repository.name }}_win_x64.zip
         asset_name: ${{ github.event.repository.name }}_win_x64.zip
         asset_content_type: application/zip
     - name: Set up Docker Buildx
