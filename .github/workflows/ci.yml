@@ -171,7 +171,7 @@ jobs:
       shell: bash
       id: tag_output
       run: |
-        echo "::set-output name=TAG_NAME::$cat tag_version/tag.txt)"
+        echo "::set-output name=TAG_NAME::$(cat tag_version/tag.txt)"
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
     - name: Login to DockerHub
