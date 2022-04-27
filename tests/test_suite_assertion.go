@@ -25,7 +25,7 @@ func NewTestSuiteAssertion(assertion string) *TestSuiteAssertion {
 
 func (assert TestSuiteAssertion) Parse(str string) (*TestSuiteAssertion, error) {
 	parts := strings.Split(str, " ")
-	if len(parts) < 2 || len(parts) > 3 {
+	if len(parts) < 2 {
 		return nil, errors.New("not enough operation")
 	}
 
@@ -47,9 +47,21 @@ func (assert TestSuiteAssertion) Parse(str string) (*TestSuiteAssertion, error) 
 		result.Property = fieldParts[2]
 	}
 
-	if len(parts) == 3 {
-		result.ExpectedResult = parts[2]
+	if len(parts) >= 3 {
+		for i := 2; i < len(parts); i = i + 1 {
+			if len(result.ExpectedResult) > 0 {
+				result.ExpectedResult += " "
+			}
+			result.ExpectedResult += parts[i]
+		}
+
+		// result.ExpectedResult = parts[2]
 	}
+
+	result.ExpectedResult = strings.TrimLeft(result.ExpectedResult, "\"")
+	result.ExpectedResult = strings.TrimRight(result.ExpectedResult, "\"")
+	result.ExpectedResult = strings.TrimLeft(result.ExpectedResult, "'")
+	result.ExpectedResult = strings.TrimRight(result.ExpectedResult, "'")
 
 	return &result, nil
 }

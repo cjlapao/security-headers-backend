@@ -19,20 +19,26 @@ func ValidateHeadersController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	suites := tests.TestSuite{
-		TargetSite: "https://devprod-sfc.ivanticlouddev.com/api/disco/probe",
-	}
+	// suites := tests.TestSuite{
+	// 	TargetSite: "https://devprod-sfc.ivanticlouddev.com/api/disco/probe",
+	// }
 
-	testCase := suites.AddTestCase("x1")
-	testCaseStep := testCase.AddStep("http")
-	testCaseStep.Weight = 20
-	testCaseStep.AddAssertion("result.statuscode ShouldBeEqual 200")
+	// testCase := suites.AddTestCase("x1")
+	// testCaseStep := testCase.AddStep("http")
+	// testCaseStep.Weight = 20
+	// testCaseStep.AddAssertion("result.statuscode ShouldBeEqual 200")
+	// testCaseStep.AddAssertion("result.headers.content-type ShouldBeEqual 'text/plain and something'")
+	// testCaseStep.AddAssertion("result.headers.request-context ShouldContainSubstring appId=")
+	// testCaseStep.AddAssertion("result.headers.expect-ct ShouldContainSubstring max-age=604800")
 
-	testCase1 := suites.AddTestCase("x2")
-	testCaseStep1 := testCase1.AddStep("http")
-	testCaseStep1.Url = "https://devprod-sfc.ivanticlouddev.com/api/disco/probe123"
-	testCaseStep1.Weight = 5
-	testCaseStep1.AddAssertion("result.statuscode ShouldBeEqual 200")
+	// testCase1 := suites.AddTestCase("x2")
+	// testCaseStep1 := testCase1.AddStep("http")
+	// testCaseStep1.Url = "https://devprod-sfc.ivanticlouddev.com/api/disco/probe123"
+	// testCaseStep1.Weight = 5
+	// testCaseStep1.AddAssertion("result.statuscode ShouldBeEqual 200")
 
+	// suites.Test()
+	var suites tests.TestSuite
+	tests.LoadYamlFromFile("./testCases.yml", &suites)
 	suites.Test()
 }

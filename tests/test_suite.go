@@ -1,11 +1,18 @@
 package tests
 
-import "github.com/cjlapao/common-go/helper"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	"github.com/cjlapao/common-go/helper"
+	"gopkg.in/yaml.v3"
+)
 
 type TestSuite struct {
-	TargetSite string
-	TestCases  []*TestSuiteCase
-	Result     *TestSuiteResult
+	TargetSite string           `json:"targetSite" yaml:"targetSite"`
+	TestCases  []*TestSuiteCase `json:"testCases" yaml:"testCases"`
+	Result     *TestSuiteResult `json:"result" yaml:"result"`
 }
 
 func NewTestSuite() *TestSuite {
@@ -40,4 +47,61 @@ func (ts *TestSuite) Test() {
 	}
 
 	ts.Result.Process()
+}
+
+func LoadYamlFromFile(filePath string, dest *TestSuite) error {
+	if !helper.FileExists(filePath) {
+		return errors.New(fmt.Sprintf("file %v was not found", filePath))
+	}
+
+	fileContent, err := helper.ReadFromFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	UnmarshalYaml(string(fileContent), dest)
+	return nil
+}
+
+func UnmarshalJson(jsonStr string, dest *TestSuite) {
+	var tmpObj TestSuite
+	json.Unmarshal([]byte(jsonStr), &tmpObj)
+
+	getObject(tmpObj, dest)
+}
+
+func UnmarshalYaml(yamlStr string, dest *TestSuite) {
+	var tmpObj TestSuite
+	yaml.Unmarshal([]byte(yamlStr), &tmpObj)
+
+	getObject(tmpObj, dest)
+}
+
+func getObject(tempObject TestSuite, dest *TestSuite) {
+	dest.TargetSite = tempObject.TargetSite
+	for _, tmpCase := range tempObject.TestCases {
+		testCase := dest.AddTestCase(tmpCase.Name)
+		for _, tmpStep := range tmpCase.Steps {
+			step := testCase.AddStep(tmpStep.Type)
+			if tmpStep.Method != "" {
+				step.Method = tmpStep.Method
+			}
+
+			if tmpStep.Timeout != "" {
+				step.Timeout = tmpStep.Timeout
+			}
+
+			if tmpStep.Url != "" {
+				step.Url = tmpStep.Url
+			}
+
+			if tmpStep.Weight > 0 {
+				step.Weight = tmpStep.Weight
+			}
+
+			for _, tmpAssertion := range tmpStep.Assertions {
+				step.AddAssertion(tmpAssertion)
+			}
+		}
+	}
 }

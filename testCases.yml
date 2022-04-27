@@ -1,0 +1,25 @@
+targetSite: https://devprod-sfc.ivanticlouddev.com/api/disco/probe
+testCases:
+  - name: test1
+    steps:
+    - type: html
+      method: GET
+      weight: 20
+      timeout: 10
+      assertions:
+        - result.statuscode ShouldBeEqual 200
+        - result.headers.content-type ShouldBeEqual 'text/plain'
+        - result.headers.request-context ShouldContainSubstring appId=
+        - result.headers.expect-ct ShouldContainSubstring max-age=604800
+  - name: test2
+    steps:
+    - type: html
+      method: GET
+      weight: 5
+      timeout: 10
+      url: https://devprod-sfc.ivanticlouddev.com/api/disco/probe123
+      assertions:
+        - result.statuscode ShouldBeEqual 200
+        - result.headers.content-type ShouldBeEqual 'text/plain and something'
+        - result.headers.request-context ShouldContainSubstring appId=
+        - result.headers.expect-ct ShouldContainSubstring max-age=604800

@@ -3,20 +3,20 @@ package tests
 import "github.com/cjlapao/common-go/helper"
 
 type TestSuiteCase struct {
-	ID        string
-	TestSuite *TestSuite
-	Name      string `json:"name" yaml:"name"`
-	Steps     []*TestSuiteStep
+	ID        string           `json:"" yaml:""`
+	TestSuite *TestSuite       `json:"" yaml:""`
+	Name      string           `json:"name" yaml:"name"`
+	Steps     []*TestSuiteStep `json:"steps" yaml:"steps"`
 }
 
 func (testCase *TestSuiteCase) AddStep(stepType string) *TestSuiteStep {
 	result := TestSuiteStep{
-		ID:            helper.RandomString(20),
-		TestSuiteCase: testCase,
-		Type:          "http",
-		Method:        "GET",
-		Weight:        10,
-		Assertions:    make([]*TestSuiteAssertion, 0),
+		ID:               helper.RandomString(20),
+		TestSuiteCase:    testCase,
+		Type:             "http",
+		Method:           "GET",
+		Weight:           10,
+		ParsedAssertions: make([]*TestSuiteAssertion, 0),
 	}
 
 	if testCase.TestSuite != nil && testCase.TestSuite.TargetSite != "" {
