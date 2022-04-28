@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/cjlapao/common-go/helper/http_helper"
 	"github.com/cjlapao/security-headers-backend/common"
 	"github.com/cjlapao/security-headers-backend/entities"
-	"github.com/cjlapao/security-headers-backend/tests"
+	"github.com/cjlapao/security-headers-backend/securityheaders"
 )
 
 func ValidateHeadersController(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +40,17 @@ func ValidateHeadersController(w http.ResponseWriter, r *http.Request) {
 	// testCaseStep1.AddAssertion("result.statuscode ShouldBeEqual 200")
 
 	// suites.Test()
-	var suites tests.TestSuite
-	tests.LoadYamlFromFile("./testCases.yml", &suites)
-	suites.Test()
+	// var suites tests.TestSuite
+	// tests.LoadYamlFromFile("./testCases.yml", &suites)
+	// suites.Test()
+	svc := securityheaders.New(body.TargetSite)
+	if svc == nil {
+		common.WriteError(w, errors.New("no target website found"))
+		return
+	}
+
+	result := svc.Calculate()
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }

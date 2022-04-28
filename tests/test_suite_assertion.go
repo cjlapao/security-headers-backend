@@ -10,6 +10,7 @@ type TestSuiteAssertion struct {
 	Field          string
 	Property       string
 	Operation      TestSuiteAssertionOperation
+	FieldTree      []string
 	ExpectedResult string
 }
 
@@ -35,7 +36,9 @@ func (assert TestSuiteAssertion) Parse(str string) (*TestSuiteAssertion, error) 
 		return nil, errors.New("not a result query")
 	}
 
-	result := TestSuiteAssertion{}
+	result := TestSuiteAssertion{
+		FieldTree: make([]string, 0),
+	}
 	result.Assertion = str
 	result.Operation = result.Operation.Parse(parts[1])
 
@@ -45,6 +48,13 @@ func (assert TestSuiteAssertion) Parse(str string) (*TestSuiteAssertion, error) 
 
 	if len(fieldParts) >= 3 {
 		result.Property = fieldParts[2]
+	}
+
+	for _, fieldPart := range fieldParts {
+		if strings.ToLower(fieldPart) != "result" {
+			parsedFieldPart := strings.ReplaceAll(fieldPart, "::", ".")
+			result.FieldTree = append(result.FieldTree, strings.ToLower(parsedFieldPart))
+		}
 	}
 
 	if len(parts) >= 3 {
@@ -63,5 +73,7 @@ func (assert TestSuiteAssertion) Parse(str string) (*TestSuiteAssertion, error) 
 	result.ExpectedResult = strings.TrimLeft(result.ExpectedResult, "'")
 	result.ExpectedResult = strings.TrimRight(result.ExpectedResult, "'")
 
+	result.Field = strings.ReplaceAll(result.Field, "::", ".")
+	result.Property = strings.ReplaceAll(result.Property, "::", ".")
 	return &result, nil
 }

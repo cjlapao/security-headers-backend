@@ -1,5 +1,5 @@
 package entities
 
 type SecurityHeaderRequest struct {
-	Url string `json:"url"`
+	TargetSite string `json:"targetSite" yaml:"targetSite"`
 }

@@ -22,6 +22,8 @@ const (
 	ShouldBeLessOrEqualThan
 	ShouldNotBeLessOrEqualThan
 	ShouldHaveCountOf
+	ShouldBeTrue
+	ShouldBeFalse
 )
 
 func (op TestSuiteAssertionOperation) Parse(str string) TestSuiteAssertionOperation {
@@ -59,6 +61,10 @@ func (op TestSuiteAssertionOperation) Parse(str string) TestSuiteAssertionOperat
 		result = ShouldNotBeLessOrEqualThan
 	case "shouldhavecountof":
 		result = ShouldHaveCountOf
+	case "shouldbetrue":
+		result = ShouldBeTrue
+	case "shouldbefalse":
+		result = ShouldBeFalse
 	}
 
 	return result

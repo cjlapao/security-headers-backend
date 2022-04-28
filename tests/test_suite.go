@@ -28,12 +28,19 @@ func (ts *TestSuite) AddTestCase(name string) *TestSuiteCase {
 		ID:        helper.RandomString(20),
 		TestSuite: ts,
 		Name:      name,
+		Timeout:   1000,
+		Type:      "http",
+		Method:    "GET",
 		Steps:     make([]*TestSuiteStep, 0),
 	}
 
 	ts.TestCases = append(ts.TestCases, &result)
 	ts.Result = &TestSuiteResult{}
 	ts.Result.Results = make([]*TestSuiteCaseStepResult, 0)
+
+	if ts.TargetSite != "" {
+		result.Url = ts.TargetSite
+	}
 
 	return &result
 }
@@ -81,20 +88,20 @@ func getObject(tempObject TestSuite, dest *TestSuite) {
 	dest.TargetSite = tempObject.TargetSite
 	for _, tmpCase := range tempObject.TestCases {
 		testCase := dest.AddTestCase(tmpCase.Name)
+		if tmpCase.Method != "" {
+			testCase.Method = tmpCase.Method
+		}
+
+		if tmpCase.Timeout >= 0 {
+			testCase.Timeout = tmpCase.Timeout
+		}
+
+		if tmpCase.Url != "" {
+			testCase.Url = tmpCase.Url
+		}
+
 		for _, tmpStep := range tmpCase.Steps {
-			step := testCase.AddStep(tmpStep.Type)
-			if tmpStep.Method != "" {
-				step.Method = tmpStep.Method
-			}
-
-			if tmpStep.Timeout != "" {
-				step.Timeout = tmpStep.Timeout
-			}
-
-			if tmpStep.Url != "" {
-				step.Url = tmpStep.Url
-			}
-
+			step := testCase.AddStep()
 			if tmpStep.Weight > 0 {
 				step.Weight = tmpStep.Weight
 			}
