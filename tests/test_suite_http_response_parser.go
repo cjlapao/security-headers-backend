@@ -7,16 +7,17 @@ import (
 )
 
 type TestSuiteHttpResponse struct {
-	Body          interface{}       `json:"body" yaml:"body"`
-	ContentLength int64             `json:"contentLength" yaml:"contentLength"`
-	Headers       map[string]string `json:"headers" yaml:"headers"`
-	Cookies       map[string]TestSuiteHttpResponseCookie
-	Protocol      string                   `json:"protocol" yaml:"protocol"`
-	ProtocolMajor int                      `json:"protocolMajor" yaml:"protocolMajor"`
-	ProtocolMinor int                      `json:"protocolMinor" yaml:"protocolMinor"`
-	Status        string                   `json:"status" yaml:"status"`
-	StatusCode    int                      `json:"statusCode" yaml:"statusCode"`
-	Tls           TestSuiteHttpResponseTls `json:"tls" yaml:"tls"`
+	Body            interface{}       `json:"body" yaml:"body"`
+	ContentLength   int64             `json:"contentLength" yaml:"contentLength"`
+	Headers         map[string]string `json:"headers" yaml:"headers"`
+	Cookies         map[string]TestSuiteHttpResponseCookie
+	Protocol        string                   `json:"protocol" yaml:"protocol"`
+	ProtocolMajor   int                      `json:"protocolMajor" yaml:"protocolMajor"`
+	ProtocolMinor   int                      `json:"protocolMinor" yaml:"protocolMinor"`
+	Status          string                   `json:"status" yaml:"status"`
+	StatusCode      int                      `json:"statusCode" yaml:"statusCode"`
+	Tls             TestSuiteHttpResponseTls `json:"tls" yaml:"tls"`
+	TlsCertificates []TestSuiteTlsCertificate
 }
 
 type TestSuiteHttpResponseTls struct {
@@ -39,6 +40,20 @@ type TestSuiteHttpResponseCookie struct {
 	Secure   bool      `json:"secure" yaml:"secure"`
 	SameSite string    `json:"sameSite" yaml:"sameSite"`
 	Value    string    `json:"value" yaml:"value"`
+}
+
+type TestSuiteTlsCertificate struct {
+	Subject            string
+	CommonNames        string
+	AlternativeNames   string
+	SerialNumber       string
+	ValidFrom          string
+	ValidUntil         string
+	Key                string
+	Issuer             string
+	SignatureAlgorithm string
+	IsCaa              bool
+	Trusted            bool
 }
 
 func (httpResponse TestSuiteHttpResponse) Parse(response *http.Response) *TestSuiteHttpResponse {
@@ -88,6 +103,20 @@ func (httpResponse TestSuiteHttpResponse) Parse(response *http.Response) *TestSu
 		result.Tls.NegotiatedProtocolIsMutual = response.TLS.NegotiatedProtocolIsMutual
 		result.Tls.ServerName = response.TLS.ServerName
 		result.Tls.CipherSuite = response.TLS.CipherSuite
+		for _, cert := range response.TLS.PeerCertificates {
+			tlsCert := TestSuiteTlsCertificate{}
+			tlsCert.AlternativeNames = strings.Join(cert.DNSNames, ",")
+			tlsCert.IsCaa = cert.IsCA
+			tlsCert.SerialNumber = cert.Issuer.SerialNumber
+			tlsCert.Issuer = cert.Issuer.CommonName
+			tlsCert.Key = cert.PublicKeyAlgorithm.String()
+			tlsCert.SignatureAlgorithm = cert.SignatureAlgorithm.String()
+			tlsCert.Subject = cert.Subject.CommonName
+			tlsCert.ValidFrom = cert.NotBefore.Format(time.RFC3339)
+			tlsCert.ValidUntil = cert.NotAfter.Format(time.RFC3339)
+
+			result.TlsCertificates = append(result.TlsCertificates, tlsCert)
+		}
 	}
 
 	return &result

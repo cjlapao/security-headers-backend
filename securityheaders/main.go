@@ -1,8 +1,6 @@
 package securityheaders
 
 import (
-	"strings"
-
 	"github.com/cjlapao/common-go/guard"
 	"github.com/cjlapao/security-headers-backend/tests"
 )
@@ -44,19 +42,6 @@ func (s *SecurityHeadersService) Calculate() *SecurityHeadersResult {
 		TargetSite: s.TargetSite,
 		Headers:    make([]SecurityHeadersResultHeader, 0),
 		Cookies:    make([]SecurityHeadersResultCookie, 0),
-	}
-
-	if testCase.Response != nil && testCase.Response.Header != nil && len(testCase.Response.Header) > 0 {
-		for key, value := range testCase.Response.Header {
-			header := SecurityHeadersResultHeader{
-				Passed: true,
-				Header: key,
-				Value:  strings.Join(value, ";"),
-			}
-
-			result.Headers = append(result.Headers, header)
-		}
-
 	}
 
 	s.Result = &result

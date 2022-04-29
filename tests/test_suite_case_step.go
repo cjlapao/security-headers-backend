@@ -30,7 +30,7 @@ func (testSuitStep *TestSuiteStep) Run() *TestSuiteCaseStepResult {
 
 	if testSuitStep.ParsedAssertions != nil && len(testSuitStep.ParsedAssertions) > 0 {
 		for _, assertion := range testSuitStep.ParsedAssertions {
-			assertionResult := testSuitStep.NewAssert(testSuitStep.TestSuiteCase.Object, assertion)
+			assertionResult := assertion.Assert(testSuitStep.TestSuiteCase.Object)
 			stepResult.AssertionResults = append(stepResult.AssertionResults, assertionResult)
 		}
 	}
@@ -64,52 +64,8 @@ func (testSuitStep *TestSuiteStep) TestHeaders(response *http.Response) error {
 	return nil
 }
 
-func (testSuitStep *TestSuiteStep) Assert(objectToAssert interface{}, assertion *TestSuiteAssertion, field ...string) *TestSuiteCaseStepAssertionResult {
-	assertkey := assertion.Field
-	if field != nil && len(field) == 1 {
-		assertkey = field[0]
-	}
-	t := reflect.TypeOf(objectToAssert)
-	v := reflect.ValueOf(objectToAssert)
-	switch t.Kind() {
-	case reflect.Map:
-		return testSuitStep.AssertMap(assertion.Field, v, assertion)
-	default:
-		for i := 0; i < v.NumField(); i = i + 1 {
-			fv := v.Field(i)
-			ft := t.Field(i)
-			name := fmt.Sprintf("%v", ft.Name)
-			if strings.EqualFold(name, assertkey) {
-				switch fv.Kind() {
-				case reflect.Bool:
-					compareTo := strhelper.ToBoolean(assertion.ExpectedResult)
-					return testSuitStep.AssertBool(ft.Name, fv.Bool(), compareTo, assertion)
-				case reflect.String:
-					return testSuitStep.AssertString(ft.Name, fv.String(), assertion.ExpectedResult, assertion)
-				case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
-					compareTo, err := strconv.Atoi(assertion.ExpectedResult)
-					if err != nil {
-						return &TestSuiteCaseStepAssertionResult{
-							Passed:        false,
-							Assertion:     assertion.Assertion,
-							ExpectedValue: assertion.ExpectedResult,
-							Error:         err.Error(),
-						}
-					}
-					return testSuitStep.AssertInt(ft.Name, fv.Int(), int64(compareTo), assertion)
-				case reflect.Map:
-					return testSuitStep.AssertMap(ft.Name, fv, assertion)
-				case reflect.Interface:
-					return testSuitStep.Assert(fv.Interface(), assertion, assertion.Property)
-				}
-				break
-			}
-		}
-	}
-	return nil
-}
-
-func (testSuitStep *TestSuiteStep) NewAssert(objectToAssert interface{}, assertion *TestSuiteAssertion) *TestSuiteCaseStepAssertionResult {
+func (testSuitStep *TestSuiteStep) Assert(objectToAssert interface{}, assertion *TestSuiteAssertion) *TestSuiteCaseStepAssertionResult {
+	// queueing the next field in the field tree of the assertion
 	assertkey := ""
 	if len(assertion.FieldTree) > 0 {
 		assertkey = assertion.FieldTree[0]
@@ -127,7 +83,7 @@ func (testSuitStep *TestSuiteStep) NewAssert(objectToAssert interface{}, asserti
 	v := reflect.ValueOf(objectToAssert)
 	switch t.Kind() {
 	case reflect.Map:
-		return testSuitStep.AssertMap(assertion.Field, v, assertion)
+		return testSuitStep.AssertMap(assertkey, v, assertion)
 	default:
 		for i := 0; i < v.NumField(); i = i + 1 {
 			fv := v.Field(i)
@@ -154,7 +110,7 @@ func (testSuitStep *TestSuiteStep) NewAssert(objectToAssert interface{}, asserti
 				case reflect.Map:
 					return testSuitStep.AssertMap(ft.Name, fv, assertion)
 				case reflect.Interface:
-					return testSuitStep.NewAssert(fv.Interface(), assertion)
+					return testSuitStep.Assert(fv.Interface(), assertion)
 				}
 				break
 			}
@@ -162,6 +118,7 @@ func (testSuitStep *TestSuiteStep) NewAssert(objectToAssert interface{}, asserti
 	}
 	return nil
 }
+
 func (testSuitStep *TestSuiteStep) AssertInt(name string, valueToCompare int64, compareTo int64, assertion *TestSuiteAssertion) *TestSuiteCaseStepAssertionResult {
 	assertionResult := TestSuiteCaseStepAssertionResult{
 		Assertion:     assertion.Assertion,
@@ -533,7 +490,7 @@ func (testSuitStep *TestSuiteStep) AssertMap(name string, mapValue reflect.Value
 
 				return testSuitStep.AssertInt(name, int64(valType), int64(compareTo), assertion)
 			case interface{}:
-				return testSuitStep.NewAssert(val.Interface(), assertion)
+				return testSuitStep.Assert(val.Interface(), assertion)
 			default:
 				isMap := reflect.ValueOf(valType).Kind() == reflect.Map
 				if isMap {
@@ -549,7 +506,7 @@ func (testSuitStep *TestSuiteStep) AssertMap(name string, mapValue reflect.Value
 			Passed:        false,
 			Assertion:     assertion.Assertion,
 			ExpectedValue: assertion.ExpectedResult,
-			Error:         fmt.Sprintf("%v was not found", assertion.Field),
+			Error:         fmt.Sprintf("%v was not found", assertkey),
 		}
 	}
 

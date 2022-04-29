@@ -2,7 +2,8 @@ package entities
 
 type SecurityHeaderResponse struct {
 	TargetSite string                                `json:"targetSite" yaml:"targetSite"`
-	Score      string                                `json:"score" yaml:"score"`
+	Score      int                                   `json:"score" yaml:"score"`
+	OutOf      int                                   `json:"outOf" yaml:"outOf"`
 	Headers    []SecurityHeaderServiceResponseHeader `json:"headers" yaml:"headers"`
 }
 
